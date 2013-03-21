@@ -1,6 +1,6 @@
 Open Framework Subtheming Kit for Drupal 7.x
 
--- SUMMARY -- 
+-- SUMMARY --
 
 Authors: Megan Erin Miller
 This kit is for creating subthemes based on Open Framework (http://openframework.stanford.edu).

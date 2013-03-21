@@ -64,7 +64,7 @@
           <div class="nav-collapse collapse">
             <nav role="navigation">
               <?php if (($primary_nav) && empty($page['navigation'])): ?>
-              <?php print render($primary_nav); ?> 
+              <?php print render($primary_nav); ?>
               <!-- /#primary-menu -->
               <?php endif; ?>
               <?php if (!empty($page['navigation'])): ?>
@@ -207,7 +207,7 @@
           <div id="content-bottom" class="row-fluid content-bottom"> <?php print render($page['content_bottom']); ?> </div>
           <?php endif; ?>
         </div>
-        <!-- /#content-wrap --> 
+        <!-- /#content-wrap -->
       </div>
       <!-- /#content -->
       <?php if ($page['sidebar_second']): ?>

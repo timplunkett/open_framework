@@ -1,6 +1,6 @@
 <?php
+
 function open_framework_form_system_theme_settings_alter(&$form, &$form_state) {
- 
   // Page Layout
   $form['layout_container'] = array(
     '#type' => 'fieldset',
@@ -9,14 +9,14 @@ function open_framework_form_system_theme_settings_alter(&$form, &$form_state) {
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
-    
+
   $form['layout_container']['front_heading_classes'] = array(
     '#type'          => 'radios',
     '#title'         => t('Page heading'),
     '#default_value' => theme_get_setting('front_heading_classes'),
     '#options'       => array(
       '' => t('Hide heading on front page - <strong><em>Default</em></strong>'),
-	  'show-title ' => t('Show heading on front page'),
+    'show-title ' => t('Show heading on front page'),
     ),
   );
 
@@ -26,10 +26,10 @@ function open_framework_form_system_theme_settings_alter(&$form, &$form_state) {
     '#default_value' => theme_get_setting('breadcrumb_classes'),
     '#options'       => array(
       '' => t('Hide breadcrumbs - <strong><em>Default</em></strong>'),
-	  'show-breadcrumb ' => t('Show breadcrumbs'),
+    'show-breadcrumb ' => t('Show breadcrumbs'),
     ),
   );
-    
+
   // Background Section
   $form['background_container'] = array(
     '#type' => 'fieldset',
@@ -38,7 +38,7 @@ function open_framework_form_system_theme_settings_alter(&$form, &$form_state) {
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
-  
+
   // Body Background Image
   $form['background_container']['body_bg_type'] = array(
     '#type'          => 'radios',
@@ -46,26 +46,26 @@ function open_framework_form_system_theme_settings_alter(&$form, &$form_state) {
     '#default_value' => theme_get_setting('body_bg_type'),
     '#options'       => array(
       '' => t('Wallpaper pattern - <strong><em>Default</em></strong>'),
-	  'photobg ' => t('Photo image'),
+    'photobg ' => t('Photo image'),
     ),
   );
-  
+
  $form['background_container']['body_bg_classes'] = array(
     '#type'          => 'radios',
     '#title'         => t('Body background image'),
     '#default_value' => theme_get_setting('body_bg_classes'),
     '#options'       => array(
       '' => t('None - <strong><em>Default</em></strong>'),
-	  'bodybg ' => t('Use my image (upload below):'),
+    'bodybg ' => t('Use my image (upload below):'),
     ),
   );
-   
+
   // Default path for image
   $body_bg_path = theme_get_setting('body_bg_path');
   if (file_uri_scheme($body_bg_path) == 'public') {
     $body_bg_path = file_uri_target($body_bg_path);
   }
- 
+
   // Helpful text showing the file name, disabled to avoid the user thinking it can be used for any purpose.
   $form['background_container']['body_bg_path'] = array(
     '#type' => 'hidden',
@@ -74,7 +74,7 @@ function open_framework_form_system_theme_settings_alter(&$form, &$form_state) {
   );
   if (!empty($body_bg_path)) {
     $form['background_container']['body_bg_preview'] = array(
-      '#markup' => !empty($body_bg_path) ? 
+      '#markup' => !empty($body_bg_path) ?
        theme('image', array('path' => theme_get_setting('body_bg_path'))) : '',
     );
   }
@@ -85,7 +85,7 @@ function open_framework_form_system_theme_settings_alter(&$form, &$form_state) {
     '#title' => 'Upload background image',
     '#description' => 'You can upload the following image file types: *.jpg, *.gif, or *.png',
   );
-  
+
   // Border Style
   $form['border_container'] = array(
     '#type' => 'fieldset',
@@ -94,27 +94,27 @@ function open_framework_form_system_theme_settings_alter(&$form, &$form_state) {
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
-    
+
   $form['border_container']['border_classes'] = array(
     '#type'          => 'radios',
     '#title'         => t('Border style for content section'),
     '#default_value' => theme_get_setting('border_classes'),
     '#options'       => array(
-	  '' => t('No borders - <strong><em>Default</em></strong>'),
+    '' => t('No borders - <strong><em>Default</em></strong>'),
       'borders' => t('Show borders'),
     ),
   );
-  
+
   $form['border_container']['corner_classes'] = array(
     '#type'          => 'radios',
     '#title'         => t('Corner style'),
     '#default_value' => theme_get_setting('corner_classes'),
     '#options'       => array(
-	  '' => t('Straight corners - <strong><em>Default</em></strong>'),
+    '' => t('Straight corners - <strong><em>Default</em></strong>'),
       'roundedcorners' => t('Rounded corners (not supported in Internet Explorer 8 or below)'),
     ),
   );
-  
+
   // Attach custom submit handler to the form
   $form['#submit'][] = 'open_framework_settings_submit';
   $form['#validate'][] = 'open_framework_settings_validate';
@@ -129,7 +129,7 @@ function open_framework_settings_submit($form, &$form_state) {
     $parts = pathinfo($file->filename);
     $destination = 'public://' . $parts['basename'];
     $file->status = FILE_STATUS_PERMANENT;
-   
+
     if(file_copy($file, $destination, FILE_EXISTS_REPLACE)) {
       $_POST['body_bg_path'] = $form_state['values']['body_bg_path'] = $destination;
     }
@@ -137,7 +137,6 @@ function open_framework_settings_submit($form, &$form_state) {
     // Avoid error when the form is submitted without specifying a new image
     $_POST['body_bg_path'] = $form_state['values']['body_bg_path'] = $previous;
   }
- 
 }
 
 function open_framework_settings_validate($form, &$form_state) {
