@@ -1,7 +1,15 @@
 <?php
 
+/**
+ * @file
+ * Functions to support theming in the Open Framework theme.
+ */
+
+/**
+ * Implements hook_preprocess_HOOK() for html.tpl.php.
+ */
 function open_framework_preprocess_html(&$vars) {
-  // theme option variables
+  // Theme option variables.
   $vars['front_heading_classes'] = theme_get_setting('front_heading_classes');
   $vars['breadcrumb_classes'] = theme_get_setting('breadcrumb_classes');
   $vars['border_classes'] = theme_get_setting('border_classes');
@@ -11,6 +19,9 @@ function open_framework_preprocess_html(&$vars) {
   $vars['body_bg_path'] = theme_get_setting('body_bg_path');
 }
 
+/**
+ * Implements hook_js_alter().
+ */
 function open_framework_js_alter(&$javascript) {
   // Update jquery version for non-administration pages
   if (arg(0) != 'admin' && arg(0) != 'panels' && arg(0) != 'ctools') {
@@ -31,13 +42,21 @@ function open_framework_js_alter(&$javascript) {
   }
 }
 
+/**
+ * Implements hook_preprocess_HOOK() for page.tpl.php.
+ */
 function open_framework_preprocess_page(&$vars) {
-  // Add page template suggestions based on the aliased path. For instance, if the current page has an alias of about/history/early, we'll have templates of:
-  // page-about-history-early.tpl.php, page-about-history.tpl.php, page-about.tpl.php
+  // Add page template suggestions based on the aliased path. For instance, if
+  // the current page has an alias of about/history/early, we'll have templates
+  // of:
+  // - page-about-history-early.tpl.php
+  // - page-about-history.tpl.php
+  // - page-about.tpl.php
   // Whichever is found first is the one that will be used.
   if (module_exists('path')) {
-    $alias = drupal_get_path_alias(str_replace('/edit','',$_GET['q']));
-    if ($alias != $_GET['q']) {
+    $current_path = current_path();
+    $alias = drupal_get_path_alias(str_replace('/edit', '', $current_path));
+    if ($alias != $current_path) {
       $template_filename = 'page';
       foreach (explode('/', $alias) as $path_part) {
         $template_filename = $template_filename . '-' . $path_part;
@@ -45,28 +64,46 @@ function open_framework_preprocess_page(&$vars) {
       }
     }
   }
-  // Get the entire main menu tree
+  // Get the entire main menu tree.
   $main_menu_tree = menu_tree_all_data('main-menu');
 
-  // Add the rendered output to the $main_menu_expanded variables
+  // Add the rendered output to the $main_menu_expanded variables.
   $vars['main_menu_expanded'] = menu_tree_output($main_menu_tree);
 
-    // Primary nav
+  // Primary nav.
   $vars['primary_nav'] = FALSE;
   if ($vars['main_menu']) {
-    // Build links
-    $vars['primary_nav'] = menu_tree(variable_get('menu_main_links_source', 'main-menu'));
-    // Provide default theme wrapper function
-    $vars['primary_nav']['#theme_wrappers'] = array('menu_tree__primary');
+    $vars['primary_nav'] = array(
+      '#theme' => 'links__system_main_menu',
+      '#links' => $vars['main_menu'],
+      '#attributes' => array(
+        'id' => 'main-menu-links',
+        'class' => array('links', 'clearfix'),
+      ),
+      '#heading' => array(
+        'text' => t('Main menu'),
+        'level' => 'h2',
+        'class' => array('element-invisible'),
+      ),
+    );
   }
 
-  // Secondary nav
+  // Secondary nav.
   $vars['secondary_nav'] = FALSE;
   if ($vars['secondary_menu']) {
-    // Build links
-    $vars['secondary_nav'] = menu_tree(variable_get('menu_secondary_links_source', 'user-menu'));
-    // Provide default theme wrapper function
-    $vars['secondary_nav']['#theme_wrappers'] = array('menu_tree__secondary');
+    $vars['secondary_nav'] = array(
+      '#theme' => 'links__system_secondary_menu',
+      '#links' => $vars['secondary_menu'],
+      '#attributes' => array(
+        'id' => 'secondary-menu-links',
+        'class' => array('links', 'inline', 'clearfix'),
+      ),
+      '#heading' => array(
+        'text' => t('Secondary menu'),
+        'level' => 'h2',
+        'class' => array('element-invisible'),
+      ),
+    );
   }
 
   // Replace tabs with drop down version
@@ -74,22 +111,24 @@ function open_framework_preprocess_page(&$vars) {
 
   // Add variable for site title
   $vars['my_site_title'] = variable_get('site_name');
-
 }
 
+/**
+ * Implements hook_preprocess_HOOK() for block.tpl.php.
+ */
 function open_framework_preprocess_block(&$vars) {
   // Count number of blocks in a given theme region
-$vars['block_count'] = count(block_list($vars['block']->region));
+  $vars['block_count'] = count(block_list($vars['block']->region));
 }
 
 /**
 * Determines if the region has at least one block for this user
 *
-* @param $region
-* A string containing the region name
+* @param string $region
+*   A string containing the region name
 *
-* @return
-* TRUE if the region has at least one block. FALSE if it doesn't.
+* @return bool
+*   TRUE if the region has at least one block. FALSE if it doesn't.
 */
 function open_framework_region_has_block($region) {
   $number_of_blocks = count(block_list($region));
@@ -102,20 +141,18 @@ function open_framework_region_has_block($region) {
 }
 
 /**
-* Determine the span for a blocka
-*
-* @param $block_count
-* The number of blocks in the region
-*
-* @param $block_id
-* The position of the block (starts at 1)
-*
-* @param $count_sidebars
-* A boolean indicating whether sidebars should be counted
-*
-* @return
-* The span value for the block at this location and region
-*/
+ * Determines the span for a block.
+ *
+ * @param int $block_count
+ *   The number of blocks in the region
+ * @param int $block_id
+ *   The position of the block (starts at 1).
+ * @param bool $count_sidebars
+ *   A boolean indicating whether sidebars should be counted.
+ *
+ * @return int
+ *   The span value for the block at this location and region
+ */
 function open_framework_get_span($block_count, $block_id, $count_sidebars) {
   // @petechen (6.27.12) This method of applying a value to span assumes that there
   // is at least 1 block. If there are no blocks, you end up with a calculation
@@ -144,62 +181,62 @@ function open_framework_get_span($block_count, $block_id, $count_sidebars) {
 
   if ($block_count != 0) {
 
-  // if the number of blocks divides evenly into the available width, that's our span width
-  if (($available_width % $block_count) == 0) {
-    $span = $available_width / $block_count;
+    // if the number of blocks divides evenly into the available width, that's our span width
+    if (($available_width % $block_count) == 0) {
+      $span = $available_width / $block_count;
+    }
+    // if the number of blocks does not divide evenly, we look up the span widths in an array
+    // where then indexes are available width, number of blocks, and block position
+    // e.g. [9][2][1] is the span of the first block, out of two when the available width is 9.
+    else {
+      $exceptions[6][4][1] = 2;
+      $exceptions[6][4][2] = 2;
+      $exceptions[6][4][3] = 1;
+      $exceptions[6][4][4] = 1;
+
+      $exceptions[6][5][1] = 1;
+      $exceptions[6][5][2] = 1;
+      $exceptions[6][5][3] = 1;
+      $exceptions[6][5][4] = 1;
+      $exceptions[6][5][5] = 1;
+
+      $exceptions[9][2][1] = 3;
+      $exceptions[9][2][2] = 6;
+
+      $exceptions[9][4][1] = 3;
+      $exceptions[9][4][2] = 2;
+      $exceptions[9][4][3] = 2;
+      $exceptions[9][4][4] = 2;
+
+      $exceptions[9][5][1] = 3;
+      $exceptions[9][5][2] = 1;
+      $exceptions[9][5][3] = 1;
+      $exceptions[9][5][4] = 1;
+      $exceptions[9][5][5] = 3;
+
+      $exceptions[9][6][1] = 2;
+      $exceptions[9][6][2] = 2;
+      $exceptions[9][6][3] = 2;
+      $exceptions[9][6][4] = 1;
+      $exceptions[9][6][5] = 1;
+      $exceptions[9][6][6] = 1;
+
+      $exceptions[12][5][1] = 3;
+      $exceptions[12][5][2] = 2;
+      $exceptions[12][5][3] = 2;
+      $exceptions[12][5][4] = 2;
+      $exceptions[12][5][5] = 3;
+
+      $span = $exceptions[$available_width][$block_count][$block_id];
+    }
+    return $span;
   }
-  // if the number of blocks does not divide evenly, we look up the span widths in an array
-  // where then indexes are available width, number of blocks, and block position
-  // e.g. [9][2][1] is the span of the first block, out of two when the available width is 9.
-  else {
-    $exceptions[6][4][1] = 2;
-    $exceptions[6][4][2] = 2;
-    $exceptions[6][4][3] = 1;
-    $exceptions[6][4][4] = 1;
-
-    $exceptions[6][5][1] = 1;
-    $exceptions[6][5][2] = 1;
-    $exceptions[6][5][3] = 1;
-    $exceptions[6][5][4] = 1;
-    $exceptions[6][5][5] = 1;
-
-    $exceptions[9][2][1] = 3;
-    $exceptions[9][2][2] = 6;
-
-    $exceptions[9][4][1] = 3;
-    $exceptions[9][4][2] = 2;
-    $exceptions[9][4][3] = 2;
-    $exceptions[9][4][4] = 2;
-
-    $exceptions[9][5][1] = 3;
-    $exceptions[9][5][2] = 1;
-    $exceptions[9][5][3] = 1;
-    $exceptions[9][5][4] = 1;
-    $exceptions[9][5][5] = 3;
-
-    $exceptions[9][6][1] = 2;
-    $exceptions[9][6][2] = 2;
-    $exceptions[9][6][3] = 2;
-    $exceptions[9][6][4] = 1;
-    $exceptions[9][6][5] = 1;
-    $exceptions[9][6][6] = 1;
-
-    $exceptions[12][5][1] = 3;
-    $exceptions[12][5][2] = 2;
-    $exceptions[12][5][3] = 2;
-    $exceptions[12][5][4] = 2;
-    $exceptions[12][5][5] = 3;
-
-    $span = $exceptions[$available_width][$block_count][$block_id];
-  }
-  return $span;
-}
-// @petechen: so if $block_count = 0, use this as the default
+  // @petechen: so if $block_count = 0, use this as the default
   else $span = 12;
 }
 
 /**
- * Returns HTML for status and/or error messages, grouped by type.
+ * Overrides theme_status_messages().
  */
 function open_framework_status_messages($variables) {
   $display = $variables['display'];
@@ -247,7 +284,9 @@ function open_framework_status_messages($variables) {
   return $output;
 }
 
-/* Search Form Block */
+/**
+ * Impelements hook_form_alter().
+ */
 function open_framework_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'search_block_form') {
     $form['search_block_form']['#title_display'] = 'invisible';
@@ -259,8 +298,10 @@ function open_framework_form_alter(&$form, &$form_state, $form_id) {
   }
 }
 
-/* Returns HTML for primary and secondary local tasks. */
-function open_framework_menu_local_tasks(&$vars) {
+/**
+ * Overrides theme_menu_local_tasks().
+ */
+function open_framework_menu_local_tasks($vars) {
   $output = '';
 
   if ( !empty($vars['primary']) ) {
@@ -280,7 +321,9 @@ function open_framework_menu_local_tasks(&$vars) {
   return $output;
 }
 
-/* Returns HTML for primary and secondary local task. */
+/**
+ * Overrides theme_menu_local_task().
+ */
 function open_framework_menu_local_task($vars) {
   $link = $vars['element']['#link'];
   $link_text = $link['title'];
@@ -304,12 +347,16 @@ function open_framework_menu_local_task($vars) {
   return '<li class="' . implode(' ', $classes) . '">' . l($link_text, $link['href'], $link['localized_options']) . "</li>\n";
 }
 
-function open_framework_menu_tree(&$vars) {
+/**
+ * Overrides theme_menu_tree().
+ */
+function open_framework_menu_tree($vars) {
   return '<ul class="menu nav">' . $vars['tree'] . '</ul>';
 }
 
-/*
- * Implements hook_menu_link
+/**
+ * Implements theme_menu_link().
+ *
  * Apply bootstrap menu classes to all menu blocks in the
  * navigation region and the main-menu block by default.
  * Note: if a menu is in the navigation and somewhere else as well,
@@ -361,8 +408,8 @@ function open_framework_menu_link(array $vars) {
 }
 
 /**
-* Get all primary tasks including subsets
-*/
+ * Get all primary tasks including subsets
+ */
 function _bootstrap_local_tasks($tabs = FALSE) {
   if ($tabs == '') {
     return $tabs;
@@ -419,6 +466,9 @@ function _bootstrap_local_tasks($tabs = FALSE) {
   return $tabs;
 }
 
+/**
+ * Overrides theme_item_list().
+ */
 function open_framework_item_list($variables) {
   $items = $variables['items'];
   $title = $variables['title'];
@@ -471,15 +521,13 @@ function open_framework_item_list($variables) {
   return $output;
 }
 
-/*
- *  Find out if an element (a menu link) is a link displayed in the
- *  navigation region for the user. We return true by default if this is a
- *  menu link in the main-menu. Open Framework treats the main-menu
- *  as being in the navigation by default.
- *  We are using the theming functions to figure out the block IDs.
- *  The block IDs aren't passed to this function, but theming function names are,
- *  and those are baed on the block ID.
- *
+/**
+ * Find out if an element (a menu link) is a link displayed in the navigation
+ * region for the user. We return true by default if this is a menu link in the
+ * main-menu. Open Framework treats the main-menu as being in the navigation by
+ * default. We are using the theming functions to figure out the block IDs. The
+ * block IDs aren't passed to this function, but theming function names are, and
+ * those are baed on the block ID.
  */
 function open_framework_is_in_nav_menu($element) {
   // #theme holds one or more suggestions for theming function names for the link
@@ -535,27 +583,27 @@ function open_framework_is_in_nav_menu($element) {
   }
 }
 
-/*
- *  Convert a block id to a theming function name
+/**
+ * Convert a block ID to a theming function name
  */
 function open_framework_block_id_to_function_name ($id) {
-  // if a system block, remove 'system_'
+  // If a system block, remove 'system_'.
   $id = str_replace('system_', '', $id);
 
-  // recognize menu and block_menu module blocks
+  // Recognize menu and block_menu module blocks.
   if (strpos($id, 'menu_block_') === false) {
-    // if a menu block but not a menu_block block, remove menu_
+    // If a menu block but not a menu_block block, remove 'menu_'.
     $id = str_replace('menu_',       '', $id);
   }
   else {
-    // if a menu_block block, keep menu_block, but add an
+    // If a menu_block block, keep menu_block, but add an
     // underscore. Not sure why this is different from other
-    // core modules
+    // core modules.
     $id = str_replace('menu_block_', 'menu_block__', $id);
   }
 
-  // massage the id to looks like a theming function name
-  // use the same function used to create the name of theming function
+  // Massage the ID to looks like a theming function name.
+  // Use the same function used to create the name of theming function.
   $id = strtr($id, '-', '_');
   $name = 'menu_link__' . $id;
 
