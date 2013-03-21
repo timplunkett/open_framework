@@ -8,15 +8,15 @@
 /**
  * Implements hook_preprocess_HOOK() for html.tpl.php.
  */
-function open_framework_preprocess_html(&$vars) {
+function open_framework_preprocess_html(&$variables) {
   // Theme option variables.
-  $vars['front_heading_classes'] = theme_get_setting('front_heading_classes');
-  $vars['breadcrumb_classes'] = theme_get_setting('breadcrumb_classes');
-  $vars['border_classes'] = theme_get_setting('border_classes');
-  $vars['corner_classes'] = theme_get_setting('corner_classes');
-  $vars['body_bg_type'] = theme_get_setting('body_bg_type');
-  $vars['body_bg_classes'] = theme_get_setting('body_bg_classes');
-  $vars['body_bg_path'] = theme_get_setting('body_bg_path');
+  $variables['front_heading_classes'] = theme_get_setting('front_heading_classes');
+  $variables['breadcrumb_classes'] = theme_get_setting('breadcrumb_classes');
+  $variables['border_classes'] = theme_get_setting('border_classes');
+  $variables['corner_classes'] = theme_get_setting('corner_classes');
+  $variables['body_bg_type'] = theme_get_setting('body_bg_type');
+  $variables['body_bg_classes'] = theme_get_setting('body_bg_classes');
+  $variables['body_bg_path'] = theme_get_setting('body_bg_path');
 }
 
 /**
@@ -45,7 +45,7 @@ function open_framework_js_alter(&$javascript) {
 /**
  * Implements hook_preprocess_HOOK() for page.tpl.php.
  */
-function open_framework_preprocess_page(&$vars) {
+function open_framework_preprocess_page(&$variables) {
   // Add page template suggestions based on the aliased path. For instance, if
   // the current page has an alias of about/history/early, we'll have templates
   // of:
@@ -60,7 +60,7 @@ function open_framework_preprocess_page(&$vars) {
       $template_filename = 'page';
       foreach (explode('/', $alias) as $path_part) {
         $template_filename = $template_filename . '-' . $path_part;
-        $vars['template_files'][] = $template_filename;
+        $variables['template_files'][] = $template_filename;
       }
     }
   }
@@ -68,14 +68,14 @@ function open_framework_preprocess_page(&$vars) {
   $main_menu_tree = menu_tree_all_data('main-menu');
 
   // Add the rendered output to the $main_menu_expanded variables.
-  $vars['main_menu_expanded'] = menu_tree_output($main_menu_tree);
+  $variables['main_menu_expanded'] = menu_tree_output($main_menu_tree);
 
   // Primary nav.
-  $vars['primary_nav'] = FALSE;
-  if ($vars['main_menu']) {
-    $vars['primary_nav'] = array(
+  $variables['primary_nav'] = FALSE;
+  if ($variables['main_menu']) {
+    $variables['primary_nav'] = array(
       '#theme' => 'links__system_main_menu',
-      '#links' => $vars['main_menu'],
+      '#links' => $variables['main_menu'],
       '#attributes' => array(
         'id' => 'main-menu-links',
         'class' => array('links', 'clearfix'),
@@ -89,11 +89,11 @@ function open_framework_preprocess_page(&$vars) {
   }
 
   // Secondary nav.
-  $vars['secondary_nav'] = FALSE;
-  if ($vars['secondary_menu']) {
-    $vars['secondary_nav'] = array(
+  $variables['secondary_nav'] = FALSE;
+  if ($variables['secondary_menu']) {
+    $variables['secondary_nav'] = array(
       '#theme' => 'links__system_secondary_menu',
-      '#links' => $vars['secondary_menu'],
+      '#links' => $variables['secondary_menu'],
       '#attributes' => array(
         'id' => 'secondary-menu-links',
         'class' => array('links', 'inline', 'clearfix'),
@@ -107,18 +107,18 @@ function open_framework_preprocess_page(&$vars) {
   }
 
   // Replace tabs with drop down version
-  $vars['tabs']['#primary'] = _bootstrap_local_tasks($vars['tabs']['#primary']);
+  $variables['tabs']['#primary'] = _bootstrap_local_tasks($variables['tabs']['#primary']);
 
   // Add variable for site title
-  $vars['my_site_title'] = variable_get('site_name');
+  $variables['my_site_title'] = variable_get('site_name');
 }
 
 /**
  * Implements hook_preprocess_HOOK() for block.tpl.php.
  */
-function open_framework_preprocess_block(&$vars) {
+function open_framework_preprocess_block(&$variables) {
   // Count number of blocks in a given theme region
-  $vars['block_count'] = count(block_list($vars['block']->region));
+  $variables['block_count'] = count(block_list($variables['block']->region));
 }
 
 /**
@@ -301,21 +301,21 @@ function open_framework_form_alter(&$form, &$form_state, $form_id) {
 /**
  * Overrides theme_menu_local_tasks().
  */
-function open_framework_menu_local_tasks($vars) {
+function open_framework_menu_local_tasks($variables) {
   $output = '';
 
-  if ( !empty($vars['primary']) ) {
-    $vars['primary']['#prefix'] = '<h2 class="element-invisible">' . t('Primary tabs') . '</h2>';
-    $vars['primary']['#prefix'] = '<ul class="nav nav-tabs">';
-    $vars['primary']['#suffix'] = '</ul>';
-    $output .= drupal_render($vars['primary']);
+  if ( !empty($variables['primary']) ) {
+    $variables['primary']['#prefix'] = '<h2 class="element-invisible">' . t('Primary tabs') . '</h2>';
+    $variables['primary']['#prefix'] = '<ul class="nav nav-tabs">';
+    $variables['primary']['#suffix'] = '</ul>';
+    $output .= drupal_render($variables['primary']);
   }
 
-  if ( !empty($vars['secondary']) ) {
-    $vars['primary']['#prefix'] = '<h2 class="element-invisible">' . t('Primary tabs') . '</h2>';
-    $vars['secondary']['#prefix'] = '<ul class="nav nav-pills">';
-    $vars['secondary']['#suffix'] = '</ul>';
-    $output .= drupal_render($vars['secondary']);
+  if ( !empty($variables['secondary']) ) {
+    $variables['primary']['#prefix'] = '<h2 class="element-invisible">' . t('Primary tabs') . '</h2>';
+    $variables['secondary']['#prefix'] = '<ul class="nav nav-pills">';
+    $variables['secondary']['#suffix'] = '</ul>';
+    $output .= drupal_render($variables['secondary']);
   }
 
   return $output;
@@ -324,12 +324,12 @@ function open_framework_menu_local_tasks($vars) {
 /**
  * Overrides theme_menu_local_task().
  */
-function open_framework_menu_local_task($vars) {
-  $link = $vars['element']['#link'];
+function open_framework_menu_local_task($variables) {
+  $link = $variables['element']['#link'];
   $link_text = $link['title'];
   $classes = array();
 
-  if (!empty($vars['element']['#active'])) {
+  if (!empty($variables['element']['#active'])) {
     // Add text to indicate active tab for non-visual users.
     $active = '<span class="element-invisible">' . t('(active tab)') . '</span>';
 
@@ -350,8 +350,8 @@ function open_framework_menu_local_task($vars) {
 /**
  * Overrides theme_menu_tree().
  */
-function open_framework_menu_tree($vars) {
-  return '<ul class="menu nav">' . $vars['tree'] . '</ul>';
+function open_framework_menu_tree($variables) {
+  return '<ul class="menu nav">' . $variables['tree'] . '</ul>';
 }
 
 /**
@@ -363,8 +363,8 @@ function open_framework_menu_tree($vars) {
  *       both instances of the menu will have the classes applied,
  *       not just the one in the navigation
  */
-function open_framework_menu_link(array $vars) {
-  $element = $vars['element'];
+function open_framework_menu_link(array $variables) {
+  $element = $variables['element'];
 
   if (open_framework_is_in_nav_menu($element)) {
     $sub_menu = '';
@@ -396,7 +396,7 @@ function open_framework_menu_link(array $vars) {
     return '<li' . drupal_attributes($element['#attributes']) . '>' . $output . $sub_menu . "</li>\n";
 
   } else {
-    $element = $vars['element'];
+    $element = $variables['element'];
     $sub_menu = '';
 
     if ($element['#below']) {
